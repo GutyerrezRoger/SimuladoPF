@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulado PF - Guty & Isa</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1A2426;
+      color: #F2F2F2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .quiz-box {
+      background-color: #252625;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      max-width: 700px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #A67951;
+      margin-bottom: 20px;
+    }
+
+    .pergunta {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    .opcoes {
+      display: grid;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .opcao {
+      padding: 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s ease;
+      background-color: #733917;
+      color: #F2F2F2;
+    }
+
+    .opcao:hover {
+      background-color: #A67951;
+    }
+
+    .opcao.correta {
+      background-color: #4CAF50 !important;
+    }
+
+    .opcao.errada {
+      background-color: #E53935 !important;
+    }
+
+    .pontuacao {
+      margin-bottom: 10px;
+    }
+
+    .proximo,
+    .reiniciar,
+    .ver-respostas,
+    .ver-explicacao {
+      padding: 10px 20px;
+      background-color: #A67951;
+      border: none;
+      border-radius: 6px;
+      color: #1A2426;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    .proximo:hover,
+    .reiniciar:hover,
+    .ver-respostas:hover,
+    .ver-explicacao:hover {
+      background-color: #F2DFCE;
+    }
+
+    .resumo {
+      text-align: left;
+      margin-top: 30px;
+    }
+
+    .resposta-item {
+      background-color: #1A2426;
+      border: 1px solid #333;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s forwards;
+    }
+
+    .explicacao {
+      background-color: #1A2426;
+      border: 1px solid #333;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      text-align: left;
+      display: none;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .acerto {
+      color: #4CAF50;
+    }
+
+    .erro {
+      color: #E53935;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="quiz-box" id="quizBox">
+    <h1>Simulado PF - 120 Questões</h1>
+    <div class="pontuacao" id="pontuacao">Pontuação: 0</div>
+    <div class="pergunta" id="pergunta"></div>
+    <div class="opcoes" id="opcoes"></div>
+    <div class="explicacao" id="explicacao"></div>
+    <button class="ver-explicacao" id="verExplicacao" onclick="mostrarExplicacao()" style="display: none;">Ver Explicação</button>
+    <button class="proximo" id="proximo" onclick="proximaPergunta()">Próxima Pergunta</button>
+  </div>
+
+  <script>
+    const perguntas = [
+      {
+        pergunta: "1- Constitui crime afiançável e prescritível a ação de grupos armados, civis ou militares, contra a ordem constitucional e o Estado Democrático.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `De acordo com a Constituição Federal: XLIV - constitui crime inafiançável e imprescritível a ação de grupos armados, civis ou militares, contra a ordem constitucional e o Estado Democrático.`
+      },
+      {
+        pergunta: "2- Serão considerados brasileiros natos os nascidos na República Federativa do Brasil, ainda que de pais estrangeiros, mesmo que estes estejam a serviço de seu país!",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `São brasileiros natos os nascidos na República Federativa do Brasil, ainda que de pais estrangeiros, desde que estes não estejam a serviço de seu país;`
+      },
+      {
+        pergunta: "3- Os membros das Polícias Militares e Corpos de Bombeiros Militares, instituições organizadas com base na hierarquia e disciplina, são militares dos Estados, do Distrito Federal e dos Territórios.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A questão está de acordo com o art. 42 da Constituição Federal.`
+      },
+      {
+        pergunta: "4- A Constituição poderá ser emendada na vigência de intervenção federal, de estado de defesa.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A Constituição não poderá ser emendada na vigência de intervenção federal, de estado de defesa ou de estado de sítio.`
+      },
+      {
+        pergunta: "5- Vagando os cargos de Presidente e Vice-Presidente da República, far-se-á eleição sessenta dias depois de aberta a última vaga.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Vagando os cargos de Presidente e Vice-Presidente da República, far-se-á eleição noventa dias depois de aberta a última vaga.`
+      },
+      {
+        pergunta: "6- O advogado é dispensável à administração da justiça, sendo inviolável por seus atos e manifestações no exercício da profissão.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `De acordo com a Constituição Federal: Art. 133. O advogado é indispensável à administração da justiça, sendo inviolável por seus atos e manifestações no exercício da profissão, nos limites da lei.`
+      },
+      {
+        pergunta: "7- As Forças Armadas são constituídas pela Marinha, pelo Exército e pela Aeronáutica.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `De acordo com o artigo 142 da Constituição Federal: As Forças Armadas, constituídas pela Marinha, pelo Exército e pela Aeronáutica, são instituições nacionais permanentes e regulares, organizadas com base na hierarquia e na disciplina, sob a autoridade suprema do Presidente da República, e destinam-se à defesa da Pátria, à garantia dos poderes constitucionais e, por iniciativa de qualquer destes, da lei e da ordem.`
+      },
+      {
+        pergunta: "8- Caberá habeas corpus em relação a punições disciplinares militares.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Não caberá habeas corpus em relação a punições disciplinares militares.`
+      },
+      {
+        pergunta: "9- A polícia federal, é instituída por lei como órgão permanente, organizado e mantido pela União e estruturado em carreira.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A questão trouxe o que prevê o art. 144, §1º.`
+      },
+      {
+        pergunta: "10- Os Deputados e Senadores são invioláveis, somente no âmbito civil, por quaisquer de suas opiniões, palavras e votos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Os Deputados e Senadores são invioláveis, civil e penalmente, por quaisquer de suas opiniões, palavras e votos.`
+      },
+      {
+        pergunta: "11- Na centralização são criadas entidades, as quais, possuem Personalidade Jurídica Própria, podendo ser pública ou privada.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Na centralização, os órgãos integram a mesma pessoa jurídica. Na descentralização, sim, são criadas novas pessoas jurídicas — com personalidade própria.`
+      },
+      {
+        pergunta: "12- A Presunção de legitimidade e veracidade faz parte dos atributos dos atos administrativos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Além da Presunção de legitimidade e veracidade, existem também os seguintes atributos: Autoexecutoriedade, Tipicidade, Imperatividade.`
+      },
+      {
+        pergunta: "13- O dever de prestar contas diz que o administrador público deve desempenhar suas funções com ética, honestidade e boa-fé.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `O dever de prestar contas se refere à responsabilidade do gestor em demonstrar como os recursos públicos estão sendo usados. Já o dever de probidade está ligado à ética, honestidade e boa-fé.`
+      },
+      {
+        pergunta: "14- O controle finalístico é a fiscalização e revisão, o qual, uma pessoa jurídica exerce sobre atos praticados por outra pessoa jurídica.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Esse controle é exercido pela administração direta sobre as entidades da administração indireta.`
+      },
+      {
+        pergunta: "15- A prescrição é a extinção do direito de ação em razão da inércia do seu titular pelo decurso do tempo.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Na prescrição há a extinção da ação e não propriamente do direito. Contudo, esse direito não poderá mais ser exercido judicialmente.`
+      },
+      {
+        pergunta: "16- A desapropriação é o procedimento de transferência da propriedade de terceiro para o Estado, por razões de interesse social.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A desapropriação é o procedimento de transferência da propriedade de terceiro para o Estado, por razões de interesse social ou utilidade pública, geralmente com pagamento de indenização.`
+      },
+      {
+        pergunta: "17- Os agentes credenciados são os agentes que representam a Administração Pública ou possuem convênio com o poder público.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Um exemplo desses agentes são os dentistas particulares que atendem pelo SUS e recebem do Estado.`
+      },
+      {
+        pergunta: "18- O princípio da eficiência está na Constituição desde a promulgação em 1988.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `O princípio da eficiência foi inserido pela Emenda Constitucional nº 19, de 1998.`
+      },
+      {
+        pergunta: "19- De acordo com o Princípio da regularidade o serviço público deve ser prestado de acordo com os melhores horários para a coletividade.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `De acordo com esse princípio devem ser evitados atrasos ou interrupções no serviço.`
+      },
+      {
+        pergunta: "20- O processo licitatório tem por objetivos assegurar a seleção da proposta apta a gerar o resultado de contratação mais vantajoso para a Administração Pública, inclusive no que se refere ao ciclo de vida do objeto.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A questão está de acordo com o art. 11, I da Nova Lei de Licitações.`
+      },
+      {
+        pergunta: "21- Estrutura organizacional pode ser entendida como sinônimo de organograma.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Organograma é a representação gráfica da estrutura organizacional. Não são sinônimos.`
+      },
+      {
+        pergunta: "22- A função de planejamento é uma etapa do processo organizacional que envolve a definição de metas, objetivos e estratégias para alcançar os resultados desejados.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `O planejamento é uma etapa fundamental que define os rumos da organização pública.`
+      },
+      {
+        pergunta: "23- A função de direção na Administração Pública envolve a liderança, a gestão de equipes e o acompanhamento das atividades para garantir o cumprimento dos objetivos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A direção está ligada à liderança, motivação e coordenação para execução eficiente.`
+      },
+      {
+        pergunta: "24- A gestão de projetos envolve o planejamento, organização, execução e controle de recursos para alcançar objetivos específicos dentro de um prazo determinado.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Essa é a definição moderna e correta da gestão de projetos.`
+      },
+      {
+        pergunta: "25- A gestão de processos na administração pública busca otimizar os fluxos de trabalho e a eficiência operacional, sem levar em consideração a satisfação dos cidadãos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A gestão de processos visa também melhorar o atendimento ao cidadão.`
+      },
+      {
+        pergunta: "26- A departamentalização por produtos visa garantir que os produtos/serviços sejam ofertados com o máximo de qualidade, conforto e segurança.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Esse é exatamente o objetivo dessa forma de organização.`
+      },
+      {
+        pergunta: "27- Na departamentalização matricial o foco dos departamentos se dá de acordo com cada projeto da organização.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A questão mistura conceitos. A departamentalização por projetos tem esse foco, não a matricial.`
+      },
+      {
+        pergunta: "28- A denominação cliente surge no setor público, tendo sido posteriormente transportado para o setor público.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Na verdade, surgiu no setor privado e foi trazido para o setor público com a reforma do Estado.`
+      },
+      {
+        pergunta: "29- Os serviços públicos antes da reforma eram considerados plenamente eficientes.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Pelo contrário, a reforma foi justamente para corrigir ineficiências.`
+      },
+      {
+        pergunta: "30- O Programa Brasileiro de Qualidade e Produtividade é visto como o marco da excelência nos serviços públicos brasileiros.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Esse programa, criado em 1991, é realmente considerado o marco inicial.`
+      },
+      {
+        pergunta: "31- O princípio do equilíbrio orçamentário é um princípio implícito. Apesar disso, norteia toda Administração Pública.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Esse princípio está alinhado à Lei de Responsabilidade Fiscal.`
+      },
+      {
+        pergunta: "32- De acordo com o princípio da anualidade, o orçamento público possui como característica o fato de ser ânuo.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `O orçamento público é elaborado para vigência de um ano civil.`
+      },
+      {
+        pergunta: "33- Por questões de segurança jurídica, a Lei Orçamentária Anual (LOA) deverá compreender apenas aquelas receitas e despesas imprescindíveis para o ente público, ou seja, aquelas que possuem altas quantias.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A LOA deve conter todas as receitas e despesas, não apenas as mais relevantes.`
+      },
+      {
+        pergunta: "34- Denomina-se crédito orçamentário inicial ou ordinário aquele crédito aprovado pela lei orçamentária anual.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Crédito orçamentário ordinário é o crédito constante da LOA.`
+      },
+      {
+        pergunta: "35- A estrutura do chamado Orçamento-programa foca nos aspectos administrativos e de elaboração.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `O foco do orçamento-programa é no planejamento, não apenas na execução.`
+      },
+      {
+        pergunta: "36- A fase da execução compõe o ciclo orçamentário, ocorrendo após a aprovação e a publicação da lei orçamentária. Nesta fase, será possível executar a lei, ou seja, ela deverá ser cumprida.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A execução é a etapa de colocar o orçamento em prática.`
+      },
+      {
+        pergunta: "37- Quanto às categorias econômicas, as receitas podem ser compreendidas como Receitas Correntes e Receitas de Capital.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Essa é a classificação padrão da receita pública segundo a legislação orçamentária.`
+      },
+      {
+        pergunta: "38- A Despesa pública pode ser conceituada como a aplicação pela autoridade pública de certo valor em dinheiro a fim de executar uma determinada finalidade. A despesa deverá ter autorização legislativa.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A despesa pública exige autorização legal para ocorrer.`
+      },
+      {
+        pergunta: "39- Pelo princípio da unidade, tem-se que o documento orçamentário não deve ser único, uma vez que a própria CF/88 prevê três orçamentos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `O princípio da unidade defende a elaboração de um único orçamento, mesmo com três peças orçamentárias.`
+      },
+      {
+        pergunta: "40- Não obstante as diversas mudanças ocorridas sobre o tema, prevalece atualmente a possibilidade de existência das chamadas caudas orçamentárias.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `As caudas orçamentárias são proibidas pelo princípio da exclusividade orçamentária.`
+      },
+      {
+        pergunta: "41- A Administração de Materiais visa minimizar os recursos gastos em materiais armazenados.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Visa justamente reduzir o capital parado em estoque.`
+      },
+      {
+        pergunta: "42- O suprimento da organização com os materiais necessários ao desenvolvimento das atividades organizacionais incumbe à Administração de Recursos Materiais (ARM).",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Essa é a função principal da ARM.`
+      },
+      {
+        pergunta: "43- Materiais de estoque são os materiais de demanda imprevisível para os quais não são definidos parâmetros para o ressuprimento automático.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Essa descrição se refere aos materiais não de estoque.`
+      },
+      {
+        pergunta: "44- O ato de descrever um item pelas suas características inerentes é denominado especificação de materiais.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Essa é a definição correta de especificação de materiais.`
+      },
+      {
+        pergunta: "45- O nome básico é a denominação inicial da descrição.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Nome básico é como mesa, papel, caneta — início da descrição.`
+      },
+      {
+        pergunta: "46- É possível afirmar que a manutenção da produção abastecida com os materiais necessários não é um dos objetivos do setor de compras.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Trata-se, sim de um dos objetivos do setor de compras, juntamente com: a obtenção da quantidade de materiais necessários; a manutenção da qualidade do material a ser adquirido; a busca constante pelas melhores condições possíveis para a empresa; e o suprimento das necessidades do sistema de produção.`
+      },
+      {
+        pergunta: "47- O acompanhamento do pedido objetiva permitir ao gestor adequar o processo produtivo à entrega dos produtos obtidos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `O acompanhamento do pedido refere-se a um procedimento de grande importância realizado no âmbito da organização com a finalidade de permitir ao gestor adequar o processo produtivo à entrega dos produtos obtidos.`
+      },
+      {
+        pergunta: "48- Compra é uma operação essencial entre aquelas que compõem o processo de suprimento de uma empresa.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Conforme explica Marco Aurélio Dias: O material chegará ao estoque por intermédio de compras, uma operação essencial entre aquelas que compõem o processo de suprimento de uma empresa.`
+      },
+      {
+        pergunta: "49- A classificação por mercado fornecedor divide-se em mercado nacional, mercado estrangeiro e materiais em processo de nacionalização.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `O mercado nacional refere-se aos materiais fabricados no próprio país. Por sua vez, mercado estrangeiro refere-se aos materiais fabricados fora do país. Finalmente, materiais em processo de nacionalização são materiais para os quais se estão desenvolvendo fornecedores nacionais.`
+      },
+      {
+        pergunta: "50- A compra importada trata-se de modalidade em que a compra passa por procedimento rigoroso/formal, é o caso das licitações.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Essa definição pertence a chamada compra formal. A compra importada é aquela em que, conforme o próprio nome já diz, o fornecedor dos produtos encontra-se em outro país que não o do comprador.`
+      },
+      {
+        pergunta: "51- A gestão de pessoas é uma área que se preocupa exclusivamente com a contratação de novos funcionários para a empresa.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A gestão de pessoas abrange diversas atividades relacionadas aos colaboradores dentro da empresa, como recrutamento, seleção, treinamento, desenvolvimento, avaliação de desempenho, motivação, retenção de talentos, entre outras. Não se resume apenas à contratação, uma vez que envolve até mesmo ações voltadas para a valorização e o desenvolvimento dos funcionários ao longo do tempo.`
+      },
+      {
+        pergunta: "52- É possível conceituar a gestão de pessoas como uma função que permite a colaboração eficaz de pessoas para o alcance dos objetivos tanto organizacionais quanto individuais.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Trata-se de notável conceito trazido por Chiavenato. Para ele a gestão de Pessoas nas organizações é a função que permite a colaboração eficaz das pessoas — empregados, funcionários, recursos humanos ou qualquer denominação utilizada — para alcançar os objetivos organizacionais e individuais.`
+      },
+      {
+        pergunta: "53- O feedback é uma prática que não tem importância na gestão de pessoas, pois pode ser considerado apenas como uma forma de crítica aos colaboradores.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `O feedback é uma ferramenta essencial na gestão de pessoas, pois permite a comunicação clara e construtiva entre líderes e colaboradores. É uma oportunidade para fornecer elogios, reconhecimento pelo bom desempenho, além de identificar pontos de melhoria e fornecer orientações para o desenvolvimento profissional dos colaboradores. Um feedback adequado contribui para o crescimento individual e para o aprimoramento do trabalho em equipe.`
+      },
+      {
+        pergunta: "54- A Gestão de Pessoas nas organizações não se relaciona com outros sistemas de organização, sendo uma área isolada e independente, uma vez que deve ser sempre imparcial para tomar as melhores decisões.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Gestão de Pessoas está diretamente relacionada com outros sistemas de organização, como a estratégia empresarial, a gestão de processos, a cultura organizacional e a gestão da qualidade. Uma Gestão de Pessoas eficiente deve estar alinhada aos objetivos estratégicos da empresa, integrando-se aos demais sistemas para garantir que as ações relacionadas aos colaboradores estejam em harmonia com a visão e a missão da organização, colaborando para a sua sustentabilidade e sucesso.`
+      },
+      {
+        pergunta: "55- O fato de o indivíduo estar contente com a organização e satisfeito com o trabalho realizado, são fatores de grande relevância para o sucesso organizacional.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Colaboradores satisfeitos tendem a ser mais engajados, produtivos e comprometidos com os objetivos da empresa. Além disso, a satisfação no trabalho está associada a uma maior retenção de talentos, redução do absenteísmo e uma melhora no clima organizacional. Colaborado res felizes têm maior propensão a permanecer na empresa, o que reduz os custos de rotatividade e contribui para a estabilidade e a continuidade das operações. Além disso, um ambiente de trabalho positivo e uma cultura organizacional que valoriza o bem-estar dos colaboradores podem atrair novos talentos e contribuir para a construção de uma imagem positiva da empresa no mercado. Portanto, a satisfação dos colaboradores é um fator-chave para o sucesso e a sustentabilidade das organizações.`
+      },
+      {
+        pergunta: "56- A teoria da Equidade propõe que os colaboradores comparam sua relação de esforço e recompensas com a relação de outros colaboradores, buscando uma distribuição justa e equitativa.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A teoria da Equidade, desenvolvida por Adams, sugere que os colaboradores comparam a relação entre seus esforços e recompensas com a relação de outros colaboradores na organização. Caso percebam uma discrepância injusta, podem sentir insatisfação e desmotivação.`
+      },
+      {
+        pergunta: "57- A teoria da Hierarquia das Necessidades de Maslow propõe que as necessidades dos colaboradores devem ser satisfeitas em ordem hierárquica, começando pelas necessidades fisiológicas e avançando para as necessidades de autorrealização.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A teoria de Maslow sugere que as necessidades humanas são organizadas em uma hierarquia, começando pelas necessidades fisiológicas (como alimentação e abrigo) e avançando para necessidades de segurança, sociais, de estima e de autorrealização. Segundo a teoria, as necessidades em um nível inferior devem ser satisfeitas antes que as necessidades em um nível superior se tornem motivadoras para os indivíduos.`
+      },
+      {
+        pergunta: "58- A cultura organizacional é imutável e não pode ser influenciada pelos colaboradores ou gestores.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A cultura organizacional é mutável e pode ser influenciada pelos colaboradores,gestores e lideranças da organização. As ações e os comportamentos dos membros da equipe, bem como as decisões e estratégias adotadas pela liderança, podem moldar e modificar a cultura organizacional ao longo do tempo.`
+      },
+      {
+        pergunta: "59- A Teoria X de McGregor pressupõe que os colaboradores possuem uma aversão natural ao trabalho e, portanto, devem ser controlados e supervisionados de perto.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A Teoria X de McGregor é baseada na crença de que os colaboradores têm uma aversão natural ao trabalho e preferem ser controlados, evitando responsabilidades e buscando segurança e estabilidade. Essa abordagem representa uma visão mais negativa sobre a natureza humana e influencia o estilo de liderança autocrático.`
+      },
+      {
+        pergunta: "60- A função administrativa que monitora e avalia as atividades e os resultados alcançados denomina-se direção.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A função administrativa que monitora e avalia as atividades e os resultados alcançados denomina-se "controle". A direção é uma das funções administrativas, mas refere-se à condução e orientação dos colaboradores para atingir os objetivos organizacionais, motivando, coordenando e liderando a equipe de forma a alcançar os resultados esperados. O controle, por sua vez, é uma função que visa verificar se as atividades estão sendo realizadas de acordo com o planejado, corrigindo eventuais desvios e garantindo que os resultados estejam alinhados com os objetivos estabelecidos.`
+      },
+      {
+        pergunta: "61- A digitalização de documentos arquivísticos é uma prática recomendada para garantir a preservação a longo prazo.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A digitalização de documentos arquivísticos é uma prática recomendada para garantir a preservação e o acesso aos documentos de forma mais eficiente. A digitalização permite criar cópias eletrônicas dos documentos físicos, reduzindo os danos causados pelo manuseio frequente e pelo envelhecimento do papel. Além disso, os documentos digitais podem ser armazenados em ambientes controlados e protegidos, facilitando o acesso e a disseminação das informações.`
+      },
+      {
+        pergunta: "62- O princípio da proveniência afirma que os documentos devem ser mantidos em sua ordem original.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `O princípio da proveniência (ou princípio do respeito aos fundos) estabelece que os documentos devem ser mantidos em suas séries ou conjuntos originais, sem serem misturados ou reorganizados arbitrariamente. Isso significa que os documentos devem ser mantidos de acordo com a estrutura organizacional que possuíam em sua entidade produtora ou acumuladora. A manutenção da ordem original dos documentos ajuda a preservar o contexto e a autenticidade das informações registradas.`
+      },
+      {
+        pergunta: "63- Os documentos estabelecem uma relação inorgânica com as atividades que produziram.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Trata-se, na verdade, de uma relação orgânica. A organicidade é justamente a relação entre documentos de um arquivo, a qual decorre das atividades da instituição que os tenha acumulado`
+      },
+      {
+        pergunta: "64- O Plano de Classificação é um instrumento arquivístico que estabelece as regras para a seleção, a avaliação e o descarte de documentos em um arquivo.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `O Plano de Classificação é um instrumento arquivístico que estabelece a estrutura de organização dos documentos em um arquivo, definindo as categorias e subcategorias sob as quais os documentos serão classificados. O Plano de Classificação não trata da seleção, avaliação ou descarte de documentos. Essas questões são abordadas pelo Plano de Descrição e pelo Plano de Destinação.`
+      },
+      {
+        pergunta: "65- A microfilmagem de documentos de arquivo é uma técnica obsoleta e não é mais utilizada atualmente.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Apesar do avanço da tecnologia digital, a microfilmagem ainda é uma técnica utilizada para preservar e armazenar documentos de arquivo. A microfilmagem oferece uma forma de preservação de longo prazo, pois o filme de microfilme é resistente ao desgaste do tempo e não é afetado por problemas de obsolescência de hardware e software. Além disso, a microfilmagem pode ser uma opção para documentos que precisam ser preservados fisicamente, especialmente em casos em que a legislação ou normas específicas exigem o uso desse método.`
+      },
+      {
+        pergunta: "66- A microfilmagem de documentos trata-se de uma metodologia usada para preservar a informação e a imagem documental.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `A microfilmagem consiste em um sistema de gerenciamento e preservação de informações, por meio da captação das imagens de documentos por processo fotográfico. Trata-se de um sistema de gerenciamento e preservação de informações por meio da captação das imagens de documentos por processo fotográfico.`
+      },
+      {
+        pergunta: "67- A informação é a unidade de registro, qualquer que seja o formato ou suporte.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Trata-se do conceito de documento. O documento é a unidade de registro de informações, qualquer que seja o formato ou suporte.`
+      },
+      {
+        pergunta: "68- O suporte documental pode ser entendido como o material em que se registra as informações.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: `Suporte do documento é o material sobre o qual as informações são registradas. Ex: papel, CD, fita magnética, dentre outros.`
+      },
+      {
+        pergunta: "69- A atividade do protocolo é de grande importância para qualquer organização. Por este motivo, trata-se de atividade típica da fase intermediária.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `A atividade de protocolo é exclusiva da fase corrente do ciclo de vida dos documentos. Portanto, não há que se falar em protocolo nas fases intermediária e permanente.`
+      },
+      {
+        pergunta: "70- Em relação a certificação digital, pode-se afirmar que a autoridade de registro (AR) é responsável pela geração do documento com certificação digital.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: `Não confunda: A Autoridade Certificadora (AC) é a responsável por emitir o certificado. Por sua vez, a Autoridade de Registro (AR) não emite certificados, tendo como função receber, validar e encaminhar as solicitações de emissão ou revogação de certificados digitais.`
+      },
+      {
+        pergunta: "71- É permitido o funcionamento de estabelecimento financeiro onde haja guarda de valores ou movimentação de numerário, que não possua sistema de segurança elaborado pelo Ministério da Justiça.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "É vedado o funcionamento de estabelecimento financeiro que não possua sistema de segurança com parecer favorável elaborado pelo Ministério da Justiça."
+      },
+      {
+        pergunta: "72- As instituições financeiras e demais instituições autorizadas a funcionar pelo Banco Central do Brasil, que colocarem à disposição do público caixas eletrônicos, não precisam instalar equipamentos que inutilizem as cédulas em caso de arrombamento.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "É obrigatória a instalação de dispositivos que inutilizem as cédulas em caso de arrombamento, movimento brusco ou alta temperatura."
+      },
+      {
+        pergunta: "73- Para exercer a profissão de vigilante é necessário ter a idade mínima de 21 (vinte e um) anos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A idade mínima para ser vigilante é 21 anos, conforme exigido pela legislação."
+      },
+      {
+        pergunta: "74- Será permitido ao vigilante, quando em serviço, portar revólver calibre 32 ou 38 e utilizar cassetete de madeira ou de borracha.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A legislação permite o uso dos equipamentos mencionados por vigilantes em serviço."
+      },
+      {
+        pergunta: "75- Apenas pessoas jurídicas, que em caráter eventual, necessitar exercer qualquer uma das atividades sujeitas a controle e fiscalização, deverá providenciar o seu cadastro junto ao Departamento de Polícia Federal.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A regra se aplica tanto a pessoas jurídicas quanto a pessoas físicas, conforme a legislação."
+      },
+      {
+        pergunta: "76- A pessoa física ou jurídica que suspender atividade sujeita a controle deve comunicar a paralisação ao Departamento de Polícia Federal no prazo legal.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "O prazo será de trinta dias e não quarenta e cinco dias como afirma a questão. A legislação obriga a comunicação da paralisação ou alteração de atividade ao DPF."
+      },
+      {
+        pergunta: "77- O Ministro da Justiça pode definir, por portaria, os produtos químicos a serem controlados, mediante proposta do DPF ou outros órgãos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O Ministro da Justiça pode sim definir, por portaria, os produtos químicos controlados."
+      },
+      {
+        pergunta: "78- São isentos da Taxa de Controle de Produtos Químicos os órgãos da administração direta federal, estadual e municipal.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A legislação isenta tais órgãos do pagamento da taxa, sem prejuízo das demais obrigações."
+      },
+      {
+        pergunta: "79- As funções de polícia marítima, aeroportuária e de fronteira são realizadas pela Polícia Civil nos pontos de entrada e saída do território nacional.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "Tais funções são atribuição da Polícia Federal, e não da Polícia Civil."
+      },
+      {
+        pergunta: "80- A deportação é medida decorrente de procedimento penal que consiste na retirada compulsória de pessoa em situação migratória irregular.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A deportação não decorre de processo penal, mas de processo administrativo migratório."
+      },
+      {
+        pergunta: "81- O filho de pai ou mãe brasileiro nascido no exterior e não registrado em repartição consular poderá, a qualquer tempo, promover ação de opção de nacionalidade.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O órgão de registro deve informar periodicamente à autoridade competente os dados relativos à opção de nacionalidade, conforme regulamento."
+      },
+      {
+        pergunta: "82- O pedido de extradição originado de Estado estrangeiro será recebido pelo órgão competente do Poder Executivo.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A extradição é de competência do Poder Executivo, que submete ao STF para análise legal."
+      },
+      {
+        pergunta: "83- A empresa que comercializa armas de fogo, acessórios e munições responde legalmente por essas mercadorias enquanto não forem vendidas.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "Antes da venda, as armas permanecem registradas como propriedade da empresa."
+      },
+      {
+        pergunta: "84- O certificado de registro de arma de fogo será expedido pela Polícia Civil e precedido de autorização do Sinarm.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "O certificado de registro de arma de fogo é expedido pela Polícia Federal e será precedido de autorização do Sinarm, não pela Polícia Civil."
+      },
+      {
+        pergunta: "85- A autorização para o porte de arma de fogo de uso permitido, em todo o território nacional, é de competência da Polícia Federal.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A autorização é competência da Polícia Federal, conforme o Estatuto do Desarmamento."
+      },
+      {
+        pergunta: "86- Disparar arma de fogo em via pública sem intenção de outro crime tem pena de 4 a 6 anos de reclusão.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A pena correta é de 2 a 4 anos de reclusão e multa, conforme a legislação."
+      },
+      {
+        pergunta: "87- As funções de polícia judiciária e a apuração de infrações civis exercidas pelo delegado são exclusivas de Estado.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A função é relacionada à apuração de infrações penais, não civis."
+      },
+      {
+        pergunta: "88- O indiciamento, privativo do delegado de polícia, dar-se-á por ato fundamentado, mediante análise técnico-jurídica do fato.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "Está correto conforme o artigo 2º, §6º da Lei 12.830/2013."
+      },
+      {
+        pergunta: "89- Durante a investigação criminal, o delegado não pode requisitar perícia, informações ou documentos.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "O delegado pode e deve requisitar perícia e informações durante a investigação."
+      },
+      {
+        pergunta: "90- O cargo de delegado de polícia não é privativo de bacharel em Direito.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "O cargo de delegado é sim privativo de bacharel em Direito."
+      },
+      {
+        pergunta: "91- A tipologia textual refere-se aos diferentes tipos de textos que existem, como narrativo, descritivo e argumentativo.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A tipologia textual diz respeito à classificação dos textos em diferentes categorias, como narrativo, descritivo, argumentativo entre outros."
+      },
+      {
+        pergunta: "92- O texto expositivo tem como objetivo informar e explicar algo ao leitor.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O texto expositivo é aquele que busca transmitir informações de forma objetiva, apresentando fatos, conceitos e explicações sobre determinado tema."
+      },
+      {
+        pergunta: "93- A palavra \"ênfase\" é acentuada graficamente na vogal \"e\".",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A palavra \"ênfase\" é acentuada na vogal \"e\" por meio do acento circunflexo (ˆ), indicando a pronúncia tônica da sílaba \"ên\"."
+      },
+      {
+        pergunta: "94- A crase ocorre quando há a contração da preposição \"a\" com o pronome demonstrativo \"aquela\".",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A crase se forma com a preposição \"a\" e o artigo definido feminino \"a\", não com o pronome demonstrativo \"aquela\"."
+      },
+      {
+        pergunta: "95- A crase é obrigatória antes de pronomes possessivos femininos, como \"à minha\" ou \"à sua\".",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "A crase é obrigatória nesses casos, pois há a fusão da preposição \"a\" com o artigo definido feminino."
+      },
+      {
+        pergunta: "96- \"Eles me disseram a verdade.\" Nessa frase, o pronome \"me\" está corretamente colocado.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O pronome \"me\" está corretamente colocado antes do verbo \"disseram\", seguindo a regra de colocação pronominal."
+      },
+      {
+        pergunta: "97- \"Eu gosto de ti.\" Nessa frase, o pronome \"ti\" está corretamente colocado.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A frase correta seria 'Eu gosto de você'. 'Ti' é usado com preposição, mas não com o verbo 'gostar' nesse caso."
+      },
+      {
+        pergunta: "98- O verbo \"esperar\" é transitivo direto, não exigindo preposição.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "O verbo 'esperar' pode ser transitivo direto ou indireto, dependendo do contexto. A afirmação generaliza incorretamente."
+      },
+      {
+        pergunta: "99- O verbo \"preferir\" é transitivo direto, não exigindo preposição.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "O verbo 'preferir' é transitivo direto e indireto. Ex: 'Prefiro café a chá'. A preposição 'a' é exigida pelo segundo termo comparado."
+      },
+      {
+        pergunta: "100- O pronome de tratamento 'Vossa Excelência' é utilizado para se referir a uma pessoa de forma mais formal e respeitosa.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "É correto. 'Vossa Excelência' é um pronome de tratamento formal usado para altas autoridades, como juízes e políticos."
+      },
+      {
+        pergunta: "101- No sistema operacional Linux, os arquivos e diretórios são organizados em uma estrutura hierárquica, e o diretório raiz é representado pelo símbolo \"/\".",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "No Linux, o diretório raiz é representado por '/', sendo o topo da estrutura de diretórios do sistema."
+      },
+      {
+        pergunta: "102- O sistema operacional Windows utiliza a interface de linha de comando, conhecida como Command Prompt, para executar tarefas e comandos no sistema.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O Prompt de Comando (Command Prompt) é a interface de linha de comando do Windows, usada para executar comandos."
+      },
+      {
+        pergunta: "103- Tanto o Linux quanto o Windows são sistemas operacionais de código aberto.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "Somente o Linux é de código aberto. O Windows é um sistema proprietário da Microsoft."
+      },
+      {
+        pergunta: "104- No Microsoft Word e no BrOffice Writer, é possível aplicar estilos de parágrafos para formatar o texto de forma consistente em todo o documento.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "Tanto no Microsoft Word quanto no BrOffice Writer, é possível aplicar estilos de parágrafos para formatar o texto de forma consistente em todo o documento. Os estilos de parágrafos permitem definir diferentes formatações, como fonte, tamanho, alinhamento, recuo, espaçamento e muito mais, que podem ser aplicadas a parágrafos individuais ou a todo o documento."
+      },
+      {
+        pergunta: "105- No Microsoft Excel e no BrOffice Calc, as células de uma planilha podem conter apenas valores numéricos, não sendo possível inserir texto.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "As células podem conter textos, números, fórmulas, datas e outros tipos de dados."
+      },
+      {
+        pergunta: "106- A Internet é uma rede mundial de computadores, enquanto a Intranet é uma rede de computadores restrita a uma organização específica.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "Internet é global e pública; Intranet é privada e restrita a uma organização."
+      },
+      {
+        pergunta: "107- A Internet utiliza o protocolo TCP/IP para conectar dispositivos em uma rede, permitindo o envio e recebimento de dados de forma confiável.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "TCP/IP é o conjunto de protocolos que viabiliza a comunicação na Internet."
+      },
+      {
+        pergunta: "108- O Google Chrome, Mozilla Firefox e Microsoft Internet Explorer são sistemas operacionais.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "São navegadores, não sistemas operacionais. São usados para acessar a web."
+      },
+      {
+        pergunta: "109- Computação na Nuvem (Cloud Computing) é uma tecnologia que permite o armazenamento e acesso a dados pela Internet, sem necessidade de hardware próprio.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "Cloud Computing elimina a necessidade de infraestrutura física local ao usar servidores na nuvem para armazenamento e processamento."
+      },
+      {
+        pergunta: "110- Hijacker é um tipo de malware que altera registros de DNS de um computador, prática conhecida como pharming.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "Hijacker altera o navegador; pharming altera o DNS. A afirmação mistura conceitos distintos de segurança da informação."
+      },
+      {
+        pergunta: "111- A sequência dos números 7, 10, 14, 16, 19, 23, 25, 28, 32, 34, 37,... foi criada com um padrão lógico. Assim, pode-se afirmar que o 18º termo da sequência é o número 59.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O padrão apresentado é 3, 4 e 2. Ou seja, após o 37 serão acrescidos quatro números, depois dois números, depois três números e assim sucessivamente, até chegar ao 18º que será 59."
+      },
+      {
+        pergunta: "112- Na sequência formada pelas notas musicais: Dó, Ré, Mi, Fá, Sol, Dó, Ré, Mi, Fá, Sol, Dó, … pode-se afirmar que a nota musical que ocupará a 448ª posição será Dó.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "Será Mi. A sequência Dó, Ré, Mi, Fá, Sol forma um ciclo de 5. 448 ÷ 5 dá resto 3, o que corresponde à nota Mi."
+      },
+      {
+        pergunta: "113- A sequência: 1, 4, 16, 8, 11, 44, 22, 25, 100, 50, 53, ... foi criada com um padrão e é ilimitada. Nessa sequência o vigésimo quinto termo é o número 1786.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O padrão é somar 3, multiplicar por 4 e dividir por 2. Na posição 25 teremos o número 1786."
+      },
+      {
+        pergunta: "114- Observe a sequência: 15E7, 37G9, 59I11, 711K13. Pode-se afirmar que o quinto código seguindo a sequência apresentada será 913M15.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "O padrão soma 22, 2 letras e 2 números a cada novo termo, mantendo essa lógica até chegar ao código 913M15."
+      },
+      {
+        pergunta: "115- O professor Carlos fez a seguinte declaração: 'Se 3 é divisor de 9, então 2 + 5 = 6'. É possível afirmar que ela é logicamente equivalente à afirmação: 'Se 2 + 5 = 6, então 3 é divisor de 9'.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A condicional não é comutativa. As proposições não são logicamente equivalentes."
+      },
+      {
+        pergunta: "116- Diante dos dados: 30 preferem apenas carne bovina, 20 apenas carne suína e 40 ambas, é possível afirmar que, no total, 90 funcionários responderam que não preferem nem carne bovina nem suína no almoço.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "Esses 90 preferem algum tipo de carne. Logo, apenas 10 não preferem nenhuma das duas."
+      },
+      {
+        pergunta: "117- Observe: 'Se o filho de José tem 12 anos, a filha de Maria se chama Laura'. A NEGAÇÃO está corretamente indicada em: 'O filho de João tem 12 anos e a filha de Maria não se chama Laura'.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "Para negar uma condicional, mantém-se a primeira parte e nega-se a segunda: 'O filho de José tem 12 anos e a filha de Maria não se chama Laura'."
+      },
+      {
+        pergunta: "118- A negação de 'A obra de Laura é majestosa e magnífica' é 'A obra de Laura não é majestosa nem magnífica'.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A negação correta de uma conjunção 'e' é: 'A obra de Laura não é majestosa ou não é magnífica'."
+      },
+      {
+        pergunta: "119- A frase 'A Terra é um lugar maravilhoso?' é interrogativa e, portanto, não pode ser considerada uma proposição.",
+        alternativas: ["Certo", "Errado"],
+        correta: 0,
+        explicacao: "Frases interrogativas não são consideradas proposições porque não possuem valor lógico (verdadeiro/falso)."
+      },
+      {
+        pergunta: "120- Se as proposições 'Toda criança gosta de bala' e 'Beatriz gosta de bala' forem verdadeiras, é certo concluir que 'Beatriz é uma criança'.",
+        alternativas: ["Certo", "Errado"],
+        correta: 1,
+        explicacao: "A proposição 'Toda criança gosta de bala' não implica que toda pessoa que gosta de bala seja criança."
+      }
+
+
+    ];
+
+
+    let perguntaAtual = 0;
+    let pontuacao = 0;
+    let respostasDadas = [];
+    let explicacaoAtual = "";
+
+    function embaralharPerguntas() {
+      for (let i = perguntas.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [perguntas[i], perguntas[j]] = [perguntas[j], perguntas[i]];
+      }
+    }
+
+    embaralharPerguntas();
+    carregarPergunta();
+
+    function carregarPergunta() {
+      const p = perguntas[perguntaAtual];
+      document.getElementById('pergunta').textContent = p.pergunta;
+
+      const opcoesContainer = document.getElementById('opcoes');
+      opcoesContainer.innerHTML = '';
+
+      p.alternativas.forEach((alt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'opcao';
+        btn.textContent = alt;
+        btn.onclick = () => verificarResposta(index, btn);
+        opcoesContainer.appendChild(btn);
+      });
+
+      document.getElementById('proximo').style.display = 'none';
+      document.getElementById('verExplicacao').style.display = 'none';
+      document.getElementById('explicacao').style.display = 'none';
+      document.getElementById('explicacao').innerHTML = '';
+    }
+
+    function verificarResposta(index, btn) {
+      const correta = perguntas[perguntaAtual].correta;
+      const opcoes = document.querySelectorAll('.opcao');
+
+      opcoes.forEach(b => b.disabled = true);
+
+      if (index === correta) {
+        btn.classList.add('correta');
+        pontuacao++;
+        respostasDadas.push({
+          pergunta: perguntas[perguntaAtual].pergunta,
+          certa: correta,
+          resposta: index,
+          acertou: true,
+          explicacao: perguntas[perguntaAtual].explicacao
+        });
+      } else {
+        btn.classList.add('errada');
+        opcoes[correta].classList.add('correta');
+        respostasDadas.push({
+          pergunta: perguntas[perguntaAtual].pergunta,
+          certa: correta,
+          resposta: index,
+          acertou: false,
+          explicacao: perguntas[perguntaAtual].explicacao
+        });
+      }
+
+      document.getElementById('pontuacao').textContent = `Pontuação: ${pontuacao}`;
+      document.getElementById('proximo').style.display = 'inline-block';
+      document.getElementById('verExplicacao').style.display = 'inline-block';
+      explicacaoAtual = perguntas[perguntaAtual].explicacao;
+    }
+
+    function mostrarExplicacao() {
+      const explicacaoDiv = document.getElementById('explicacao');
+      explicacaoDiv.innerHTML = `<strong>Explicação:</strong> ${explicacaoAtual}`;
+      explicacaoDiv.style.display = 'block';
+    }
+
+    function proximaPergunta() {
+      perguntaAtual++;
+      if (perguntaAtual < perguntas.length) {
+        carregarPergunta();
+      } else {
+        mostrarFinal();
+      }
+    }
+
+    function mostrarFinal() {
+      const box = document.getElementById('quizBox');
+      box.innerHTML = `
+        <h1>Fim do Simulado! 🎉</h1>
+        <p>Sua pontuação final foi <strong>${pontuacao}</strong> de ${perguntas.length}</p>
+        <button class="reiniciar" onclick="reiniciarQuiz()">Reiniciar</button>
+        <button class="ver-respostas" onclick="mostrarRespostas()">Ver Respostas</button>
+        <div id="resumoRespostas" class="resumo"></div>
+      `;
+    }
+
+    function reiniciarQuiz() {
+      perguntaAtual = 0;
+      pontuacao = 0;
+      respostasDadas = [];
+      embaralharPerguntas();
+      document.getElementById('quizBox').innerHTML = `
+        <h1>Simulado PF</h1>
+        <div class="pontuacao" id="pontuacao">Pontuação: 0</div>
+        <div class="pergunta" id="pergunta"></div>
+        <div class="opcoes" id="opcoes"></div>
+        <div class="explicacao" id="explicacao"></div>
+        <button class="ver-explicacao" id="verExplicacao" onclick="mostrarExplicacao()" style="display: none;">Ver Explicação</button>
+        <button class="proximo" id="proximo" onclick="proximaPergunta()">Próxima Pergunta</button>
+      `;
+      carregarPergunta();
+    }
+
+    function mostrarRespostas() {
+      const container = document.getElementById('resumoRespostas');
+      container.innerHTML = '<h3>Respostas:</h3>';
+
+      respostasDadas.forEach((resp, i) => {
+        const item = document.createElement('div');
+        item.className = 'resposta-item';
+        item.innerHTML = `
+          <strong>${i + 1}. ${resp.pergunta}</strong><br>
+          ✅ Resposta Correta: <em>${perguntas[i].alternativas[resp.certa]}</em><br>
+          📌 Sua resposta: <em>${perguntas[i].alternativas[resp.resposta]}</em><br>
+          ${resp.acertou ? '<span class="acerto">✔️ Acertou</span>' : '<span class="erro">❌ Errou</span>'}
+          <div class="explicacao" style="margin-top: 10px;"><strong>Explicação:</strong> ${resp.explicacao}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+  </script>
+</body>
+
+</html>
